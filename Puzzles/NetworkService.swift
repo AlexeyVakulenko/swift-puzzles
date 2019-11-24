@@ -20,7 +20,7 @@ class NetworkService {
     init() {
         session = URLSession(configuration: .default)
     }
-        
+    
     // MARK:- Первое задание
     
     ///  Вот здесь должны загружаться 4 картинки и совмещаться в одну.
@@ -77,12 +77,31 @@ class NetworkService {
     ///  Верните картинку с этим кладом в completion
     public func loadQuiz(completion: @escaping(Result<UIImage, Error>) -> ()) {
         let keyURL = URL(string: "https://sberschool-c264c.firebaseio.com/enigma.json?avvrdd_token=AIzaSyDqbtGbRFETl2NjHgdxeOGj6UyS3bDiO-Y")!
+        loadString(keyURL) { (str) in
+            print("Вот такая ссылка: \(str)")
+            let url = URL(string: str)!
+            self.loadImg(url) { (img) in
+                completion(.success(img))
+            }
+        }
+    }
         
-        //todo
-        
-        let image = UIImage()
-        // вот так передается результат
-        completion(.success(image))
+    private func loadString(_ url: URL, completion: @escaping (String) -> ()) {
+        let session = URLSession.shared
+        let request = URLRequest(url: url)
+        let task = session.dataTask(with: request, completionHandler: { (data, responce, error) in
+            completion(String(describing: self.decode(data!)))
+        })
+        task.resume()
     }
     
+    private func decode(_ data: Data) -> String {
+        do {
+            let s = try JSONDecoder().decode(String.self, from: data)
+            return s
+        } catch {
+            print("Что-то явно пошло не так...")
+        }
+        return ""
+    }
 }
